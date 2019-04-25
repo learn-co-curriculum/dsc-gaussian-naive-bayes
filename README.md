@@ -18,21 +18,21 @@ Multinomial Bayes expands upon Bayes' Theorem to multiple observations.
 
 Recall that Bayes' Theorem is:  
 
-$ P(A|B) = \frac{P(B|A)\bullet P(A)}{P(B)}$. 
+## $$ P(A|B) = \frac{P(B|A)\bullet P(A)}{P(B)}$$
 
 Expanding to multiple features, the Multinomial Bayes' formula is:  
 
-$P(y|x_1,x_2,...x_n) = \frac{P(y)\prod_{i}^{n}P(x_i|y)}{P(x_1,x_2,...x_n)}$
+## $$P(y|x_1,x_2,...x_n) = \frac{P(y)\prod_{i}^{n}P(x_i|y)}{P(x_1,x_2,...x_n)}$$
 
-Here y is an observation class while $x_1$ through $x_n$ are various features of of the observation. For example, in a minute, you'll look at the classic Iris dataset. This dataset includes various measurements of a flower's anatomy and the specific species of the flower. For that dataset, y would be the flower species while $x_1$ through $x_n$ would be the various measurements for a given flower. As such, the equation for Multinomial Bayes, given above, would allow you to calculate the probability that a given flower is of species A, or species B.
+Here y is an observation class while $x_1$ through $x_n$ are various features of of the observation. Similar to linear regression, these features are assumed to be linearly independent. The motivating idea is that the various features $x_1, x_2,...x_n$ will help inform which class a particular observation belongs to. This could be anything from 'Does this person have a disease?' to 'Is this credit card purchase fraudulent' or 'What marketing audience does this individual fall into?'. For example, in a minute, you'll look at the classic Iris dataset. This dataset includes various measurements of a flower's anatomy and the specific species of the flower. For that dataset, y would be the flower species while $x_1$ through $x_n$ would be the various measurements for a given flower. As such, the equation for Multinomial Bayes, given above, would allow you to calculate the probability that a given flower is of species A, or species B.
 
-With that, here's let's dig into the formula a little more to get a deeper understanding. In the numerator,  you multiply product of the conditional probabilities $P(x_i|y)$ by the probability of the class y. The denominator is the overall probability (across all classes) for the observed values of the various features. In practice, this can be difficult or impossible to calculate. Fortunately, doing so is typically not required, as you will simply be comparing the relative probabilities of the various classes&mdash;do you believe this flower is of species A or species B?  
+With that, let's dig into the formula a little more to get a deeper understanding. In the numerator, you multiply the product of the conditional probabilities $P(x_i|y)$ by the probability of the class y. The denominator is the overall probability (across all classes) for the observed values of the various features. In practice, this can be difficult or impossible to calculate. Fortunately, doing so is typically not required, as you will simply be comparing the relative probabilities of the various classes&mdash;do you believe this flower is of species A, species B or species C?  
 
-To calculate each of these conditional probabilities, $P(x_i|y)$, the Gaussian Naive Bayes algorithm traditionally uses the Gaussian probability density function to give a relative estimate of the probability of the feature observation, $x_i$, for the class y. Some statisticians object to this, as the probability of any point on a PDF curve is actually 0. As you've seen in z-tests and t-tests, only ranges of values have a probability, and these are calculated by taking the area under the PDF curve for the given range. While true, these point estimates can be loosely used as 'the relative probability for values near $x_i$'. 
+To calculate each of the conditional probabilities in the numerator, $P(x_i|y)$, the Gaussian Naive Bayes algorithm traditionally uses the Gaussian probability density function to give a relative estimate of the probability of the feature observation, $x_i$, for the class y. Some statisticians object to this, as the probability of any point on a PDF curve is actually 0. As you've seen in z-tests and t-tests, only ranges of values have a probability, and these are calculated by taking the area under the PDF curve for the given range. While true, these point estimates can be loosely used as 'the relative probability for values near $x_i$'. 
 
 With that, you have:  
 
-## $ P(x_i|y) = \frac{1}{\sqrt{2\bullet \pi \sigma_i^2}}e^{\frac{-(x-\mu_i)^2}{2\sigma_i^2}}$
+## $$ P(x_i|y) = \frac{1}{\sqrt{2\bullet \pi \sigma_i^2}}e^{\frac{-(x-\mu_i)^2}{2\sigma_i^2}}$$
 
 Where $\mu_i$ is the mean of feature $x_i$ for class y and $\sigma_i^2$ is the variance of feature $x_i$ for class y.
 
@@ -43,22 +43,22 @@ With that, let's take a look in practice to try to make this process a little cl
 
 ## Loading a Dataset
 
-
-```python
-pd.c
-```
+First, let's load in the Iris dataset to use to demonstrate Gaussian Naive Bayes.
 
 
 ```python
 from sklearn import datasets
 import pandas as pd
 import numpy as np
+
 iris = datasets.load_iris()
+
 X = pd.DataFrame(iris.data)
 X.columns = iris.feature_names
 
 y = pd.DataFrame(iris.target)
 y.columns = ['Target']
+
 df = pd.concat([X,y], axis=1)
 df.head()
 ```
@@ -138,6 +138,8 @@ df.head()
 
 
 
+For good measure, it's always a good idea to briefly examine the data. In this case, let's check how many observations there are for each flower species:
+
 
 ```python
 df.Target.value_counts()
@@ -153,24 +155,9 @@ df.Target.value_counts()
 
 
 
+## Calculating the Mean and Standard Deviation of Each Feature for Each Class
 
-```python
-iris.feature_names
-```
-
-
-
-
-    ['sepal length (cm)',
-     'sepal width (cm)',
-     'petal length (cm)',
-     'petal width (cm)']
-
-
-
-## Train Test Split - optional
-
-## Calculating the Mean and Variance of Each Feature for Each Class
+Next, you calculate the mean and standard deviation within a class for each of the features. You'll then use these values to calculate the conditional probability of a particular feature observation for each of the classes.
 
 
 ```python
@@ -271,103 +258,31 @@ aggs
 
 
 
-## Calculating Conditional Probabilities
+## Calculating Conditional Probability Point Estimates
+
+Take another look at how to implement point estimates for the conditional probabilities of a feature for a given class. To do this, you'll simply use the PDF of the normal distribution. (Again, there can be some objection to this method as the probability of a specific point for a continuous distribution is 0. Some statisticians bin the continuous distribution into a discrete approximation to remedy this, but doing so requires additional work and the width of these bins is an arbitrary value which will potentially impact results.)
+
+## $$ P(x_i|y) = \frac{1}{\sqrt{2\bullet \pi \sigma_i^2}}e^{\frac{-(x-\mu_i)^2}{2\sigma_i^2}}$$
+
 
 
 ```python
 from scipy import stats
-```
-
-
-```python
 def p_x_given_class(obs_row, feature, class_):
     mu = aggs[feature]['mean'][class_]
     std = aggs[feature]['std'][class_]
 
     obs = df.iloc[obs_row][feature] #observation
-    return stats.norm.pdf(obs, loc=mu, scale=std)
-p_x_given_class(0, 'petal length (cm)', 0)
+    
+    p_x_given_y = stats.norm.pdf(obs, loc=mu, scale=std)
+    return p_x_given_y
+p_x_given_class(0, 'petal length (cm)', 0) #Notice how this is not a true probability; you can get values >1.
 ```
 
 
 
 
     2.1480249640403133
-
-
-
-
-```python
-stats.norm.pdf(5)
-```
-
-
-
-
-    1.4867195147342979e-06
-
-
-
-
-```python
-stats.norm.pdf(0)
-```
-
-
-
-
-    0.3989422804014327
-
-
-
-
-```python
-mu
-```
-
-
-
-
-    Target
-    0    5.006
-    1    5.936
-    2    6.588
-    Name: mean, dtype: float64
-
-
-
-
-```python
-std
-```
-
-
-
-
-    Target
-    0    0.352490
-    1    0.516171
-    2    0.635880
-    Name: std, dtype: float64
-
-
-
-
-```python
-def p_x_given_y(x, mean_y, variance_y):
-
-    # Input the arguments into a probability density function
-    p = 1/(np.sqrt(2*np.pi*variance_y)) * np.exp((-(x-mean_y)**2)/(2*variance_y))
-    
-    # return p
-    return p
-p_x_given_y(5.1, 5.006, 0.352490**2)
-```
-
-
-
-
-    1.092246866224093
 
 
 
@@ -378,9 +293,9 @@ p_x_given_y(5.1, 5.006, 0.352490**2)
 row = 100
 c_probs = []
 for c in range(3):
-        p = 1 #Initialize probability
+        p = len(df[df.Target==c])/len(df) #Initialize probability to relative probability of class
         for feature in X.columns:
-            p *= p_x_given_class(row, feature, c)
+            p *= p_x_given_class(row, feature, c) #Update the probability using the point estimate for each feature
         c_probs.append(p)
 c_probs
 ```
@@ -388,11 +303,15 @@ c_probs
 
 
 
-    [3.170296706238971e-247, 7.380447029749463e-12, 0.07158312761220793]
+    [1.0567655687463235e-247, 2.460149009916488e-12, 0.023861042537402642]
 
 
 
 ## Calculating Class Probabilities for Observations
+
+While you haven't even attempted to calculate the denominator for the original equation,  $$P(y|x_1,x_2,...x_n) = \frac{P(y)\prod_{i}^{n}P(x_i|y)}{P(x_1,x_2,...x_n)}$$ you don't really have to.  
+
+That is, the probability $P(x_1,x_2,...x_n)$ is the probability of the given observation across all classes; it is not a function of class at all. As such, it will be a constant across all of these posterior class probabilities. Since you are simply interested in the most likely class for each observation, you can simply pick the class with the largest numerator. With that, let's adapt the code snippet above to create a function which predicts a class for a given row of data.
 
 
 ```python
@@ -406,7 +325,43 @@ def predict_class(row):
     return np.argmax(c_probs)
 ```
 
+Let's also take an example row to test this new function.
+
+
+```python
+row = 0
+df.iloc[row]
+```
+
+
+
+
+    sepal length (cm)    5.1
+    sepal width (cm)     3.5
+    petal length (cm)    1.4
+    petal width (cm)     0.2
+    Target               0.0
+    Name: 0, dtype: float64
+
+
+
+
+```python
+predict_class(row)
+```
+
+
+
+
+    0
+
+
+
+Nice! It appears that this `predict_class()` function has correctly predicted the class for this first row! Now it's time to take a look at how accurate this function is across the entire dataset!
+
 ## Calculating Accuracy
+
+In order to determine the overall accuracy of your newly minted Gaussian Naive Bayes classifier, you'll need to generate predictions for all of the rows in the dataset. From there, you can then compare these predictions to the actual class values stored in the 'Target' column. Take a look:
 
 
 ```python
@@ -426,4 +381,4 @@ df['Correct?'].value_counts(normalize=True)
 
 ## Summary
 
-
+Welcome Bayesian! You're well on your way to using Bayesian statistics in the context of machine learning! In this lesson, you saw how to adapt Bayes theorem along with your knowledge of the normal distribution to create a machine learning classifier known as Gaussian Naive Bayes. 
