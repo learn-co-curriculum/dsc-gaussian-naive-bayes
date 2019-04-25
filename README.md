@@ -318,7 +318,7 @@ That is, the probability $P(x_1,x_2,...x_n)$ is the probability of the given obs
 def predict_class(row):
     c_probs = []
     for c in range(3):
-        p = 1 #Initialize probability
+        p = len(df[df.Target==c])/len(df) #Initialize probability to relative probability of class
         for feature in X.columns:
             p *= p_x_given_class(row, feature, c)
         c_probs.append(p)
