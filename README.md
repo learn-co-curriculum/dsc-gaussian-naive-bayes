@@ -18,11 +18,12 @@ Multinomial Bayes expands upon Bayes' Theorem to multiple observations.
 
 Recall that Bayes' Theorem is:  
 
-## $$ P(A|B) = \frac{P(B|A)\bullet P(A)}{P(B)}$$
+$$ \Large P(A|B) = \frac{P(B|A)\bullet P(A)}{P(B)}$$
 
 Expanding to multiple features, the Multinomial Bayes' formula is:  
 
-## $$P(y|x_1,x_2,...x_n) = \frac{P(y)\prod_{i}^{n}P(x_i|y)}{P(x_1,x_2,...x_n)}$$
+$$ \Large P(y|x_1,x_2,...x_n) = \frac{P(y)\prod_{i}^{n}P(x_i|y)}{P(x_1,x_2,...x_n)}$$
+
 
 Here y is an observation class while $x_1$ through $x_n$ are various features of of the observation. Similar to linear regression, these features are assumed to be linearly independent. The motivating idea is that the various features $x_1, x_2,...x_n$ will help inform which class a particular observation belongs to. This could be anything from 'Does this person have a disease?' to 'Is this credit card purchase fraudulent' or 'What marketing audience does this individual fall into?'. For example, in a minute, you'll look at the classic Iris dataset. This dataset includes various measurements of a flower's anatomy and the specific species of the flower. For that dataset, y would be the flower species while $x_1$ through $x_n$ would be the various measurements for a given flower. As such, the equation for Multinomial Bayes, given above, would allow you to calculate the probability that a given flower is of species A, or species B.
 
@@ -32,7 +33,7 @@ To calculate each of the conditional probabilities in the numerator, $P(x_i|y)$,
 
 With that, you have:  
 
-## $$ P(x_i|y) = \frac{1}{\sqrt{2\bullet \pi \sigma_i^2}}e^{\frac{-(x-\mu_i)^2}{2\sigma_i^2}}$$
+$$\Large P(x_i|y) = \frac{1}{\sqrt{2\pi \sigma_i^2}}e^{\frac{-(x-\mu_i)^2}{2\sigma_i^2}}$$
 
 Where $\mu_i$ is the mean of feature $x_i$ for class y and $\sigma_i^2$ is the variance of feature $x_i$ for class y.
 
@@ -262,7 +263,7 @@ aggs
 
 Take another look at how to implement point estimates for the conditional probabilities of a feature for a given class. To do this, you'll simply use the PDF of the normal distribution. (Again, there can be some objection to this method as the probability of a specific point for a continuous distribution is 0. Some statisticians bin the continuous distribution into a discrete approximation to remedy this, but doing so requires additional work and the width of these bins is an arbitrary value which will potentially impact results.)
 
-## $$ P(x_i|y) = \frac{1}{\sqrt{2\bullet \pi \sigma_i^2}}e^{\frac{-(x-\mu_i)^2}{2\sigma_i^2}}$$
+$$ \Large P(x_i|y) = \frac{1}{\sqrt{2 \pi \sigma_i^2}}e^{\frac{-(x-\mu_i)^2}{2\sigma_i^2}}$$
 
 
 
@@ -309,7 +310,10 @@ c_probs
 
 ## Calculating Class Probabilities for Observations
 
-While you haven't even attempted to calculate the denominator for the original equation,  $$P(y|x_1,x_2,...x_n) = \frac{P(y)\prod_{i}^{n}P(x_i|y)}{P(x_1,x_2,...x_n)}$$ you don't really have to.  
+While you haven't even attempted to calculate the denominator for the original equation,  
+
+$$P(y|x_1,x_2,...x_n) = \frac{P(y)\prod_{i}^{n}P(x_i|y)}{P(x_1,x_2,...x_n)}$$ 
+you don't really have to.  
 
 That is, the probability $P(x_1,x_2,...x_n)$ is the probability of the given observation across all classes; it is not a function of class at all. As such, it will be a constant across all of these posterior class probabilities. Since you are simply interested in the most likely class for each observation, you can simply pick the class with the largest numerator. With that, let's adapt the code snippet above to create a function which predicts a class for a given row of data.
 
